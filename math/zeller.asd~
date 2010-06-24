@@ -1,0 +1,6 @@
+(asdf:defsystem :nisp.plugin.irc.operator
+  :depends-on (:alexandria :nisp.core :ironclad)
+  :components
+  ((:file "nisp.plugin.irc.operator")))
+
+;;; END
