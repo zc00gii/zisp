@@ -2,15 +2,10 @@
   (:use :cl))
 (in-package :zisp.math.zeller)
 
-(defun +zeller.syntax+ (function-name)
+(defun syntax (function-name)
   (values (format nil "The syntax is (~a month date year)" function-name)))
 
-(defun monthp (month)
-  (not (null (member month '("May" "June") :test #'string=))))
-
 (defun zeller-float (month day year &key (name "zeller-float") (errorp nil) (isop nil))
-  (declare ((integer 1 12) month) ((integer 1 31) day)
-	   (integer year))
   (let* ((q day)
 	 (m month)
 	 (k (mod year 100))
@@ -33,9 +28,6 @@
   (+ (zeller-float month day year :isop t :name "zeller-iso") 1))
 
 (defun zeller (month day year)
-  (declare ((integar 1 31) day)
-	   (integar year)
-	   (if (stringp year)
   (let ((answer (zeller-float month day year :name "zeller")))
     (cond ((= answer 0.0) "Sunday")
 	  ((= answer 1.0) "Monday")
