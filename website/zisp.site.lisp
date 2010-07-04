@@ -19,9 +19,9 @@
 	(:h1 "Welcome to my hunchentoot test site")
 	(:h2 "Links")
 	(:p
-	 (:a :href "The Facepalm" "http://www.thefacepalm.net/")
+	 (:a :href "http://www.thefacepalm.net/" "The Facepalm")
 	 (:br)
-	 (:a :href "Liquid" "http://www.liquid-de.org/"))
+	 (:a :href "http://www.liquid-de.org/" "Liquid"))
 	(:br)
 	(:h2 "Other stuff")
 	(:p
