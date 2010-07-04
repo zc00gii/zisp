@@ -4,12 +4,12 @@
 (in-package :zisp.gl)
 
 (defun render-circle (x y radius &optional (form :polygon)
-(intervals 500))
-       (gl:with-primitive form
-(gl:vertex x y)
-(loop for angle from 0 to intervals by 5 do
-(gl:vertex (+ (* (sin angle) radius) x)
-(+ (* (cos angle) radius) y)))))
+		      (intervals 500))
+  (gl:with-primitive form
+    (gl:vertex x y)
+    (loop for angle from 0 to intervals by 5 do
+	 (gl:vertex (+ (* (sin angle) radius) x)
+		    (+ (* (cos angle) radius) y)))))
 
 (defun render-square (x y length &optional (form :polygon))
   (gl:with-primitive form
@@ -68,6 +68,33 @@
 		   (v 1 1 1)
 		   (v -1 1 1)))
 
+	       (gl:flush)
+	       (sdl:update-display)
+	       (setf angle (+ angle 1)))))))
+
+(defun 3d-test-2 ()
+  (let ((angle 0))
+    (sdl:with-init ()
+      (sdl:window 100 100
+		  :title-caption "OpenGL Example"
+		  :icon-caption "OpenGL Example"
+		  :opengl t
+		  :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1)))
+      (gl:clear-color 0 0 0 0)
+      (gl:load-identity)
+      (gl:translate 0 0 -6)
+      (sdl:with-events ()
+	(:quit-event () t)
+	(:idle ()
+	       (gl:clear :color-buffer-bit)
+	       (gl:rotate angle 1 1 1)
+	       (gl:color 1 1 1)
+	       (gl:with-primitive :polygon
+		 (flet ((v (x y z) (gl:vertex x y z)))
+		   (v 1 1 0)
+		   (v 1 5 0)
+		   (v 5 5 0)
+		   (v 5 1 0)))
 	       (gl:flush)
 	       (sdl:update-display)
 	       (setf angle (+ angle 1)))))))
