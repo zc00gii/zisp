@@ -87,7 +87,6 @@
 	(:quit-event () t)
 	(:idle ()
 	       (gl:clear :color-buffer-bit)
-	       (gl:rotate angle 1 1 1)
 	       (gl:color 1 1 1)
 	       (gl:with-primitive :polygon
 		 (flet ((v (x y z) (gl:vertex x y z)))
@@ -96,5 +95,4 @@
 		   (v 5 5 0)
 		   (v 5 1 0)))
 	       (gl:flush)
-	       (sdl:update-display)
-	       (setf angle (+ angle 1)))))))
+	       (sdl:update-display))))))
