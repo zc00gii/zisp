@@ -3,6 +3,40 @@
 
 (in-package :zisp.gl)
 
+(defun render-cube (x y z length)
+  (flet ((v (x y z) (gl:vertex x y z)))
+    (gl:with-primitive :polygon
+      (v x y z)
+      (v (+ x length) y z)
+      (v (+ x length) (+ y length) z)
+      (v x (+ y length) z))
+    (gl:with-primitive :polygon
+      (v x y z)
+      (v (+ x length) y z)
+      (v (+ x length) y (+ z length))
+      (v x y (+ z length)))
+    (gl:with-primitive :polygon
+      (v x y z)
+      (v x (+ y length) z)
+      (v x (+ y length) (+ z length))
+      (v x y (+ z length)))
+  ;; Yay! Half done =D
+    (gl:with-primitive :polygon
+      (v (+ x length) y z)
+      (v (+ x length) (+ y length) z)
+      (v (+ x length) (+ y length) (+ z length))
+      (v (+ x length) y (+ z length)))
+    (gl:with-primitive :polygon
+      (v x (+ y length) z)
+      (v (+ x length) (+ y length) z)
+      (v (+ x length) (+ y length) (+ z length))
+      (v x (+ y length) (+ z length)))
+    (gl:with-primitive :polygon
+      (v x y (+ z length))
+      (v (+ x length) y (+ z length))
+      (v (+ x length) (+ y length) (+ z length))
+      (v x (+ y length) (+ z length)))))
+
 (defun render-circle (x y radius &optional (form :polygon)
 		      (intervals 10000))
   (gl:with-primitive form
@@ -64,6 +98,7 @@
 	       (sdl:update-display))))))
 
 (defun 3d-test-2 ()
+  (let ((angle 0))
   (sdl:with-init ()
     (sdl:window 800 600
 		:title-caption "OpenGL Example"
@@ -77,17 +112,14 @@
     (gl:matrix-mode :modelview)
       (gl:load-identity)
     (gl:clear-color 0 0 0 0)
-    (gl:translate 3 2 -30)
+    (gl:translate 3 2 -60)
     (sdl:with-events ()
       (:quit-event () t)
       (:idle ()
 	     (gl:clear :color-buffer-bit)
 	     (gl:color 1 1 1)
-	     (gl:with-primitive :polygon
-	       (flet ((v (x y z) (gl:vertex x y z)))
-		 (v -5 -5 4)
-		 (v -5 1 4)
-		 (v 1 1 4)
-		 (v 1 -5 4)))
+	     (gl:rotate angle 1 1 1)
+	     (render-cube 10 10 10 5)
+	     (setf angle (+ angle 0.1))
 	     (gl:flush)
-	     (sdl:update-display)))))
+	     (sdl:update-display))))))
