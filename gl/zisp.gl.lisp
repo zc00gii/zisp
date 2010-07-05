@@ -3,35 +3,29 @@
 
 (in-package :zisp.gl)
 
-(defun render-cube (x y z length)
+(defun render-cube (x y z length mode)
   (flet ((v (x y z) (gl:vertex x y z)))
-    (gl:with-primitive :polygon
+    (gl:with-primitive mode
       (v x y z)
       (v (+ x length) y z)
       (v (+ x length) (+ y length) z)
-      (v x (+ y length) z))
-    (gl:with-primitive :polygon
+      (v x (+ y length) z)
       (v x y z)
       (v (+ x length) y z)
       (v (+ x length) y (+ z length))
-      (v x y (+ z length)))
-    (gl:with-primitive :polygon
+      (v x y (+ z length))
       (v x y z)
       (v x (+ y length) z)
       (v x (+ y length) (+ z length))
-      (v x y (+ z length)))
-  ;; Yay! Half done =D
-    (gl:with-primitive :polygon
+      (v x y (+ z length))
       (v (+ x length) y z)
       (v (+ x length) (+ y length) z)
       (v (+ x length) (+ y length) (+ z length))
-      (v (+ x length) y (+ z length)))
-    (gl:with-primitive :polygon
+      (v (+ x length) y (+ z length))
       (v x (+ y length) z)
       (v (+ x length) (+ y length) z)
       (v (+ x length) (+ y length) (+ z length))
-      (v x (+ y length) (+ z length)))
-    (gl:with-primitive :polygon
+      (v x (+ y length) (+ z length))
       (v x y (+ z length))
       (v (+ x length) y (+ z length))
       (v (+ x length) (+ y length) (+ z length))
@@ -76,29 +70,6 @@
 
 (defun 3d-test-1 ()
   (let ((angle 0))
-    (sdl:with-init ()
-      (sdl:window 100 100
-		  :title-caption "OpenGL Example"
-		  :icon-caption "OpenGL Example"
-		  :opengl t
-		  :opengl-attributes '((:SDL-GL-DOUBLEBUFFER 1)))
-      (gl:clear-color 0 0 0 0)
-      (gl:load-identity)
-      (gl:translate 0 0 -6)
-      (sdl:with-events ()
-	(:quit-event () t)
-	(:idle ()
-	       (gl:clear :color-buffer-bit)
-	       (gl:color 1 1 1)
-	       (gl:with-primitive :quads
-		 (flet ((v (x y z) (gl:vertex x y z)))))
-
-
-	       (gl:flush)
-	       (sdl:update-display))))))
-
-(defun 3d-test-2 ()
-  (let ((angle 0))
   (sdl:with-init ()
     (sdl:window 800 600
 		:title-caption "OpenGL Example"
@@ -118,8 +89,12 @@
       (:idle ()
 	     (gl:clear :color-buffer-bit)
 	     (gl:color 1 1 1)
-	     (gl:rotate angle 1 1 1)
-	     (render-cube 10 10 10 5)
-	     (setf angle (+ angle 0.1))
+	     (gl:rotate 1 1 1 1)
+	     (gl:polygon-mode :front-and-back :fill)
+	     (render-cube 10 10 0 5 :quads)
+	     (gl:polygon-mode :front-and-back :line)
+	     (render-cube 0 0 0 5 :quads)
+	     (gl:polygon-mode :front-and-back :point)
+	     (render-cube -10 -10 0 5 :quads)
 	     (gl:flush)
 	     (sdl:update-display))))))
