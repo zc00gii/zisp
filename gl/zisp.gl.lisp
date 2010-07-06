@@ -1,7 +1,62 @@
 (defpackage #:zisp.gl
   (:use :cl))
 
+(in-package :cffi)
+
+(defun defcarray (array type)
+  (declare (vector array))
+  (let ((pointer (foreign-alloc type)))
+    (loop for a across array for i = 0 then (incf i) do
+	 (cond ((vectorp a) (setf (mem-aref pointer :pointer i)
+					    (defcarray a type)))
+	       (t (setf (mem-aref pointer type i)
+			(convert-to-foreign a type)))))
+    (values pointer)))
+
 (in-package :zisp.gl)
+
+(defun normalize(v)
+  (declare ((vector * 3) v))
+  (juggler::unit-vector v))
+;  (let ((d (sqrt (apply #'+
+;			(loop for i across v
+;			   collect (* i i))))))
+;    (apply #'vector (loop for i across v
+;				 collect (float (/ i d))))))
+
+(defun normalize!(v)
+  (setf v (normalize v)))
+
+(defun subdivide (v1 v2 v3 depth index)
+  (declare ((array * 3) v1 v2 v3) (real depth index))
+  (let (v12 v23 v31)
+    (if (zerop depth) t)
+    (setf v12 (juggler::add-vector v1 v2)
+	  v23 (juggler::add-vector v2 v3)
+	  v31 (juggler::add-vector v3 v1))
+    (normalize! v12)
+    (normalize! v23)
+    (normalize! v31)
+    (subdivide v1 v12 v31 (- depth 1) index)
+    (subdivide v2 v23 v12 (- depth 1) index)
+    (subdivide v3 v31 v23 (- depth 1) index)
+    (subdivide v12 v23 v31 (- depth 1) index)
+    nil))
+
+(defun subdivide! (v1 v2 v3 depth index)
+  (declare ((array * 3) v1 v2 v3) (real depth index))
+  (let (v12 v23 v31)
+    (if (zerop depth) (render-triangle v1 v2 v3 index))
+    (setf v12 (juggler::add-vector v1 v2)
+	  v23 (juggler::add-vector v2 v3)
+	  v31 (juggler::add-vector v3 v1))
+    (normalize! v12)
+    (normalize! v23)
+    (normalize! v31)
+    (subdivide! v1 v12 v31 (- depth 1) index)
+    (subdivide! v2 v23 v12 (- depth 1) index)
+    (subdivide! v3 v31 v23 (- depth 1) index)
+    (subdivide! v12 v23 v31 (- depth 1) index)))
 
 (defun render-cube (x y z length mode)
   (flet ((v (x y z) (gl:vertex x y z)))
