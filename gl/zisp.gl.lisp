@@ -3,6 +3,9 @@
 
 (in-package :cffi)
 
+(defvar *x* 0.525731112119133606)
+(defvar *z*  0.850650808352039932)
+
 (defun defcarray (array type)
   (declare (vector array))
   (let ((pointer (foreign-alloc type)))
@@ -15,13 +18,53 @@
 
 (in-package :zisp.gl)
 
-(defun vertex-v (v)
-  (cond ((= (length v) 4)
-	 (%gl:vertex-4fv (cffi::defcarray v :float))))
-  (cond ((= (length v) 3)
-	 (%gl:vertex-3fv (cffi::defcarray v :float))))
-  (cond ((= (length v) 2)
-	 (%gl:vertex-2fv (cffi::defcarray v :float)))))
+(cffi:use-foreign-library %gl::opengl)
+
+(defmacro with-c-array ((symbol value type) &body body)
+  `(let ((,symbol (cffi::defcarray ,value ,type)))
+     ,@body
+     (cffi:foreign-free ,symbol)))
+
+(defun free-c-array (array)
+  (cffi:foreign-free array))
+
+(defun alloc-c-array (type)
+  (cffi::defcarray #() type))
+
+(defun make-c-array (array type)
+  (cffi::defcarray array type))
+
+(defun vertex-v4 (v)
+  (with-c-array (vertex v :float)
+    (%gl:vertex-4fv vertex)))
+
+(defun vertex-v3 (v)
+  (with-c-array (vertex v :float)
+    (%gl:vertex-3fv vertex)))
+
+(defun vertex-v2 (v)
+  (with-c-array (vertex v :float)
+    (%gl:vertex-2fv vertex)))
+#+ ()
+(defun vertex-pointer-3 (vertices)
+  (cffi:foreign-funcall "glDrawElements"
+			cl-opengl-bindings:int 3
+			cl-opengl-bindings:enum))
+
+(defun vertex (x &optional (y 0.0) (z 0.0) (w 0.0))
+  (cond ((vectorp x)
+	 (cond ((= (length x) 4)
+		(vertex-v4 x)))
+	 (cond ((= (length x) 3)
+		(vertex-v3 x)))
+	 (cond ((= (length x) 2)
+		(vertex-v2 x))))
+	(t (gl:vertex x y z w))))
+(defun normal (x &optional y z)
+  (cond ((vectorp x)
+	 (with-c-array (normal x :float)
+	   (%gl:normal-3fv normal)))
+	(t (gl:normal x y z))))
 
 (defun normalize(v)
   (declare ((vector * 3) v))
@@ -68,6 +111,16 @@
     (subdivide! v2 v23 v12 (- depth 1) index)
     (subdivide! v3 v31 v23 (- depth 1) index)
     (subdivide! v12 v23 v31 (- depth 1) index)))
+
+(defun render-triangle (v1 v2 v3 i)
+  (let (d1 d2)
+    (setf d1 (juggler::subtract-vector v2 v1)
+	  d2 (juggler::subtract-vector v2 v3))
+    (gl:with-primitives :polygon
+      (normal (normalize-cross-product d1 d2))
+      (vertex v1)
+      (vertex v2)
+      (vertex v3))))
 
 (defun render-cube (x y z length mode)
   (flet ((v (x y z) (gl:vertex x y z)))
