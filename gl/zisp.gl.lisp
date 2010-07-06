@@ -15,6 +15,14 @@
 
 (in-package :zisp.gl)
 
+(defun vertex-v (v)
+  (cond ((= (length v) 4)
+	 (%gl:vertex-4fv (cffi::defcarray v :float))))
+  (cond ((= (length v) 3)
+	 (%gl:vertex-3fv (cffi::defcarray v :float))))
+  (cond ((= (length v) 2)
+	 (%gl:vertex-2fv (cffi::defcarray v :float)))))
+
 (defun normalize(v)
   (declare ((vector * 3) v))
   (juggler::unit-vector v))
@@ -26,6 +34,9 @@
 
 (defun normalize!(v)
   (setf v (normalize v)))
+
+(defun normalize-cross-product (vector1 vector2)
+  (normalize (juggler::cross-product vector1 vector2)))
 
 (defun subdivide (v1 v2 v3 depth index)
   (declare ((array * 3) v1 v2 v3) (real depth index))
@@ -147,6 +158,11 @@
 	     (gl:rotate 1 1 1 1)
 	     (gl:polygon-mode :front-and-back :fill)
 	     (render-cube 10 10 0 5 :quads)
+	     (gl:with-primitives :polygon
+	       (vertex-v #(-3.0 -3.0 0.0))
+	       (vertex-v #(-6.0 -3.0 0.0))
+	       (vertex-v #(-6.0 -6.0 0.0))
+	       (vertex-v #(-3.0 -6.0 0.0)))
 	     (gl:polygon-mode :front-and-back :line)
 	     (render-cube 0 0 0 5 :quads)
 	     (gl:polygon-mode :front-and-back :point)
